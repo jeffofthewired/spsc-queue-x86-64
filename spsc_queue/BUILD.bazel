@@ -1,0 +1,70 @@
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "3popERm_o",
+    srcs = ["member_functions/3popERm.asm"],
+    outs = ["3popERm.o"],
+    cmd = "nasm -f elf64 $(SRCS) -o $(OUTS)",
+)
+genrule(
+    name = "4pushEm_o",
+    srcs = ["member_functions/4pushEm.asm"],
+    outs = ["4pushEm.o"],
+    cmd = "nasm -f elf64 $(SRCS) -o $(OUTS)",
+)
+genrule(
+    name = "4sizeEv_o",
+    srcs = ["member_functions/4sizeEv.asm"],
+    outs = ["4sizeEv.o"],
+    cmd = "nasm -f elf64 $(SRCS) -o $(OUTS)",
+)
+genrule(
+    name = "4fullEv_o",
+    srcs = ["member_functions/4fullEv.asm"],
+    outs = ["4fullEv.o"],
+    cmd = "nasm -f elf64 $(SRCS) -o $(OUTS)",
+)
+genrule(
+    name = "5emptyEv_o",
+    srcs = ["member_functions/5emptyEv.asm"],
+    outs = ["5emptyEv.o"],
+    cmd = "nasm -f elf64 $(SRCS) -o $(OUTS)",
+)
+genrule(
+    name = "structors_o",
+    srcs = ["member_functions/structors.asm"],
+    outs = ["structors.o"],
+    cmd = "nasm -f elf64 $(SRCS) -o $(OUTS)",
+)
+
+cc_library(
+    name = "spsc_queue",
+    srcs = [
+        ":3popERm_o",
+        ":4pushEm_o",
+        ":4sizeEv_o",
+        ":4fullEv_o",
+        ":5emptyEv_o",
+        ":structors_o",
+    ],
+    hdrs = ["spsc_queue.h"],
+)
+
+cc_binary(
+    name = "example",
+    srcs = [
+        "example.cc",
+    ],
+    deps = [
+        ":spsc_queue",
+    ],
+)
+
+cc_test(
+    name = "spsc_queue_test",
+    srcs = ["spsc_queue_test.cc"],
+    deps = [
+        ":spsc_queue",
+        "@googletest//:gtest_main",
+    ],
+)
