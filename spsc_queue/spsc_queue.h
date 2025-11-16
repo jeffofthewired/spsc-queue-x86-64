@@ -10,24 +10,23 @@ public:
     using size_type = uint64_t;
     using value_type = uint64_t;
 
-private:
+public:
     // no vptr
+    
     // bytes [0, 0+8)
     value_type *buffer_;
     // bytes [8, 8+8)
     size_type capacity_;
+
+    // all cursors are initialized to zero
     // bytes [64, 64+8)
-    alignas(cache_line_size) size_type size_; // init 0
-
+    alignas(cache_line_size) size_type push_cursor_;
+    // bytes [72, 72+8)
+    size_type cached_pop_cursor_;
     // bytes [128, 128+8)
-    alignas(cache_line_size) size_type push_cursor_; // init 0
+    alignas(cache_line_size) size_type pop_cursor_;
     // bytes [136, 136+8)
-    size_type cached_pop_cursor_; // init 0
-
-    // bytes [192, 192+8)
-    alignas(cache_line_size) size_type pop_cursor_; // init 0
-    // bytes [200, 200+8)
-    size_type cached_push_cursor_; // init 0
+    size_type cached_push_cursor_;
 
 public:
     // special member functions "structors"
