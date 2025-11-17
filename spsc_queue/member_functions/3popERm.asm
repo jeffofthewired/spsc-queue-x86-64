@@ -30,15 +30,16 @@ _ZN10spsc_queue3popERm:
 
         case_not_empty:
         ; extract the value at the pop_cursor
-        mov     r8, [rdi+o_buffer]
-        mov     r9, [r8+rax*k_scale]
-        mov     [rsi], r9
-        ; increment and %capacity_ the pop cursor non-atomically
-        inc     rax
         xor     rdx, rdx
         ;       rcx == capacity_ thanks to ABI violation
         div     rcx
-        mov     [rdi+o_pop_cursor], rdx
+        ;       rdx is now the modulo
+        mov     r8, [rdi+o_buffer]
+        mov     r9, [r8+rdx*k_scale]
+        mov     [rsi], r9
+
+        ; increment the pop_cursor
+        inc     qword [rdi+o_pop_cursor]
 
         ; return true;
         mov     rax, 1

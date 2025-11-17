@@ -30,14 +30,15 @@ _ZN10spsc_queue4pushEm:
 
         case_not_full:
         ; insert the value at the push_cursor
-        mov     r8, [rdi+o_buffer]
-        mov     [r8+rax*k_scale], rsi
-        ; increment and %capacity_ the push cursor non-atomically
-        inc     rax
         xor     rdx, rdx
         ;       rcx == capacity_ thanks to ABI violation
         div     rcx
-        mov     [rdi+o_push_cursor], rdx
+        ;       rdx is now the modulo
+        mov     r8, [rdi+o_buffer]
+        mov     [r8+rdx*k_scale], rsi
+
+        ; increment the push cursor
+        inc     qword [rdi+o_push_cursor]
 
         ; return true;
         mov     rax, 1
