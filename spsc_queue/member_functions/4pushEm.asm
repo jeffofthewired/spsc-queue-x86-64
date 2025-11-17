@@ -18,11 +18,9 @@ section .text
 
 ; Function Definition
 ; auto spsc_queue::push(uint64_t value) -> bool;
-; rdi   this
-; rsi   value
+;       rdi     this
+;       rsi     value
 _ZN10spsc_queue4pushEm:
-        ; TODO: determine if fences are required
-
         ; determine if queue is full with this->full()
         call    _ZN10spsc_queue4fullEv ; ABI violation
         test    rax, rax

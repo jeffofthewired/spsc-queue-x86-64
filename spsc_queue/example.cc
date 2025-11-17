@@ -7,13 +7,17 @@ int main() {
     spsc_queue q{buffer, 2048};
     std::cout << "hello world" << std::endl;
     q.push(67);
-    q.push(67);
-    q.push(67);
     q.push(420);
     q.push(69);
     q.push(21);
-    auto status = q.push(187);
-    std::cout << "status: " << status << std::endl;
+    q.push(187);
+
+    uint64_t popped1;
+    uint64_t popped2;
+    q.pop(popped1);
+    q.pop(popped2);
+    std::cout << "popped1: " << popped1 << std::endl;
+    std::cout << "popped2: " << popped2 << std::endl;
 
     // dump all the member variables
     std::cout << "BEGIN MEMBER VARIABLE DUMP" << std::endl;
