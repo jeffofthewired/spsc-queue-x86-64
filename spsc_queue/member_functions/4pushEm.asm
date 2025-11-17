@@ -38,6 +38,8 @@ _ZN10spsc_queue4pushEm:
         ;       rcx == capacity_ thanks to ABI violation
         div     rcx
         mov     [rdi+o_push_cursor], rdx
+        sfence
+
         ; return true;
         mov     rax, 1
         ret

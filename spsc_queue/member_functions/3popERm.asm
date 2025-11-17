@@ -39,6 +39,8 @@ _ZN10spsc_queue3popERm:
         ;       rcx == capacity_ thanks to ABI violation
         div     rcx
         mov     [rdi+o_pop_cursor], rdx
+        sfence
+
         ; return true;
         mov     rax, 1
         ret

@@ -3,12 +3,11 @@
 #include <vector>
 #include <thread>
 #include <numeric>
-#include <algorithm>
 #include "spsc_queue.h"
 
 int main() {
     constexpr std::size_t k_buffer_size = 2048;
-    constexpr std::size_t k_seq_length = 10000;
+    constexpr std::size_t k_seq_length = 1000000;
 
     // setting up the queue
     uint64_t buffer[k_buffer_size];
@@ -59,13 +58,14 @@ int main() {
     c.join();
 
     // check for inconsistencies in input and output
-    for (std::size_t i = 0; i < k_buffer_size; ++i) {
+    for (std::size_t i = 0; i < k_seq_length; ++i) {
         if (input[i] != output[i]) {
             std::cout << "Inconsistency found at index: " << i << std::endl;
             std::cout << "BUFFER DUMP: " << std::endl;
 
             std::size_t dump_start = i-50 > 0 ? i-50 : 0;
-            for (auto j = dump_start; j < dump_start + 100 && j < k_buffer_size; ++j) {
+            std::size_t dump_end = i+50 < k_seq_length ? i+50 : k_seq_length;
+            for (auto j = dump_start; j < dump_end; ++j) {
                 if (j == i) std::cout << std::endl;
                 std::cout << "[" << j << "]:\t\t" << input[j] << ", " << output[j] << std::endl;
                 if (j == i) std::cout << std::endl;
