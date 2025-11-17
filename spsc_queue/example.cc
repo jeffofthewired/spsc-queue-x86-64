@@ -1,43 +1,78 @@
 #include <iostream>
 #include <cstdint>
+#include <vector>
+#include <thread>
+#include <numeric>
+#include <algorithm>
 #include "spsc_queue.h"
 
 int main() {
-    uint64_t buffer[2048];
-    spsc_queue q{buffer, 2048};
-    std::cout << "Pushing 67" << std::endl;
-    q.push(67);
-    std::cout << "Pushing 420" << std::endl;
-    q.push(420);
-    std::cout << "Pushing 69" << std::endl;
-    q.push(69);
-    std::cout << "Pushing 21" << std::endl;
-    q.push(21);
-    std::cout << "Pushing 187" << std::endl;
-    q.push(187);
+    constexpr std::size_t k_buffer_size = 2048;
+    constexpr std::size_t k_seq_length = 10000;
 
-    uint64_t popped1;
-    uint64_t popped2;
-    std::cout << "Popping twice" << std::endl;
-    q.pop(popped1);
-    q.pop(popped2);
-    std::cout << "popped1: " << popped1 << std::endl;
-    std::cout << "popped2: " << popped2 << std::endl;
+    // setting up the queue
+    uint64_t buffer[k_buffer_size];
+    spsc_queue q{buffer, k_buffer_size};
 
-    // dump all the member variables
-    std::cout << "\n\nBEGIN MEMBER VARIABLE DUMP" << std::endl;
-    std::cout << "capacity: " << q.capacity_ << std::endl;
-    std::cout << "push_cursor: " << q.push_cursor_ << std::endl;
-    std::cout << "pop_cursor: " << q.pop_cursor_ << std::endl;
-    std::cout << "cached_push_cursor: " << q.cached_push_cursor_ << std::endl;
-    std::cout << "cached_pop_cursor: " << q.cached_pop_cursor_ << std::endl;
-    std::cout << "END MEMBER VARIABLE DUMP" << std::endl;
+    // producer
+    std::vector<uint64_t> input(k_seq_length, 0);
+    std::iota(input.begin(), input.end(), 1);
+    auto producer = [](spsc_queue *q_ptr, std::vector<uint64_t> *input_ptr){
+        auto& q = *q_ptr;
+        auto& input = *input_ptr;
 
-    // dump some of the buffer
-    std::cout << "\n\nBEGIN BUFFER DUMP" << std::endl;
-    for (int i = 0; i < 10; ++i) {
-        std::cout << buffer[i] << std::endl;
+        auto it = input.cbegin();
+        while (it != input.cend()) {
+            if (q.push(*it)) ++it;
+        }
+    };
+
+    // consumer
+    std::vector<uint64_t> output(k_seq_length, 0);
+    auto consumer = [](spsc_queue *q_ptr, std::vector<uint64_t> *output_ptr){
+        auto& q = *q_ptr;
+        auto& output = *output_ptr;
+
+        auto it = output.begin();
+        int fails_in_a_row = 0;
+        while (it != output.end()) {
+            auto success = q.pop(*it);
+            if (success) {
+                ++it;
+
+            // TIMEOUT mechanism
+                fails_in_a_row = 0;
+            } else {
+                ++fails_in_a_row;
+                if (fails_in_a_row > 1000000) {
+                    std::cout << "TIMED OUT" << std::endl;
+                    break;
+                }
+            }
+        }
+    };
+
+    // run concurrently
+    std::thread p(producer, &q, &input);
+    std::thread c(consumer, &q, &output);
+    p.join();
+    c.join();
+
+    // check for inconsistencies in input and output
+    for (std::size_t i = 0; i < k_buffer_size; ++i) {
+        if (input[i] != output[i]) {
+            std::cout << "Inconsistency found at index: " << i << std::endl;
+            std::cout << "BUFFER DUMP: " << std::endl;
+
+            std::size_t dump_start = i-50 > 0 ? i-50 : 0;
+            for (auto j = dump_start; j < dump_start + 100 && j < k_buffer_size; ++j) {
+                if (j == i) std::cout << std::endl;
+                std::cout << "[" << j << "]:\t\t" << input[j] << ", " << output[j] << std::endl;
+                if (j == i) std::cout << std::endl;
+            }
+            break;
+        }
     }
-    std::cout << "END BUFFER DUMP" << std::endl;
-}
 
+    std::cout << "Test done!" << std::endl;
+}
