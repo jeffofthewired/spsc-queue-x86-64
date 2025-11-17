@@ -6,13 +6,29 @@ int main() {
     uint64_t buffer[2048];
     spsc_queue q{buffer, 2048};
     std::cout << "hello world" << std::endl;
-    q.size();
+    q.push(67);
+    q.push(67);
+    q.push(67);
+    q.push(420);
+    q.push(69);
+    q.push(21);
+    auto status = q.push(187);
+    std::cout << "status: " << status << std::endl;
 
     // dump all the member variables
+    std::cout << "BEGIN MEMBER VARIABLE DUMP" << std::endl;
     std::cout << "capacity: " << q.capacity_ << std::endl;
     std::cout << "push_cursor: " << q.push_cursor_ << std::endl;
     std::cout << "pop_cursor: " << q.pop_cursor_ << std::endl;
     std::cout << "cached_push_cursor: " << q.cached_push_cursor_ << std::endl;
     std::cout << "cached_pop_cursor: " << q.cached_pop_cursor_ << std::endl;
+    std::cout << "END MEMBER VARIABLE DUMP" << std::endl;
+
+    // dump some of the buffer
+    std::cout << "BEGIN BUFFER DUMP" << std::endl;
+    for (int i = 0; i < 10; ++i) {
+        std::cout << buffer[i] << std::endl;
+    }
+    std::cout << "END BUFFER DUMP" << std::endl;
 }
 

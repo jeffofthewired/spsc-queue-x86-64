@@ -1,7 +1,7 @@
-# Exports
+; Exports
 global  _ZN10spsc_queue4pushEm
 
-# Imports
+; Imports
 extern  _ZN10spsc_queue4fullEv
 
 ; Offsets into spsc_queue
@@ -26,7 +26,7 @@ _ZN10spsc_queue4pushEm:
         ; determine if queue is full with this->full()
         call    _ZN10spsc_queue4fullEv ; ABI violation
         test    rax, rax
-        je      case_full
+        jne     case_full
         ;       rdx == push_cursor_ thanks to ABI violation
         mov     rax, rdx 
 
@@ -38,7 +38,7 @@ _ZN10spsc_queue4pushEm:
         inc     rax
         xor     rdx, rdx
         ;       rcx == capacity_ thanks to ABI violation
-        div     rdx:rax, rcx
+        div     rcx
         mov     [rdi+o_push_cursor], rdx
         ; return true;
         mov     rax, 1
